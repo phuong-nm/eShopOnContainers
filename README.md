@@ -1,3 +1,21 @@
+# Quick start
+
+## Start workload
+
+```sh
+cd src
+.\eshop-up.ps1
+```
+
+## Stop workload
+
+```sh
+cd src
+.\eshop-down.ps1
+```
+
+---
+
 <a href="https://dot.net/architecture">
    <img src="https://github.com/dotnet-architecture/eShopOnContainers/raw/dev/img/eshop_logo.png" alt="eShop logo" title="eShopOnContainers" align="right" height="60" />
 </a>
@@ -106,7 +124,7 @@ You can download them and start reviewing these Guides/eBooks here:
 
 For more free e-Books check out [.NET Architecture center](https://dot.net/architecture). If you have an e-book feedback, let us know by creating a new issue here: <https://github.com/dotnet-architecture/ebooks/issues>
 
-## Are you new to **microservices** and **cloud-native development**? 
+## Are you new to **microservices** and **cloud-native development**?
 Take a look at the free course [Create and deploy a cloud-native ASP.NET Core microservice](https://docs.microsoft.com/en-us/learn/modules/microservices-aspnet-core/) on MS Learn.  This module explains microservices concepts, cloud-native technologies, and reduces the friction in getting started with `eShopOnContainers`.
 
 ## Read further
