@@ -56,7 +56,12 @@ public class EventBusSubscriptionManagerInMemory implements EventBusSubscription
     @Override
     public <T extends IntegrationEvent> List<SubscriptionInfo> getHandlersForEvent(Class<T> t) {
         String key = getEventKey(t);
-        return eventHandlers.get(key);
+        return getHandlersForEvent(key);
+    }
+
+    @Override
+    public <T extends IntegrationEvent> List<SubscriptionInfo> getHandlersForEvent(String eventName) {
+        return eventHandlers.get(eventName);
     }
 
     @Override

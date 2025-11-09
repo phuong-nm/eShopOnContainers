@@ -19,6 +19,8 @@ public interface EventBusSubscriptionManager {
 
     <T extends IntegrationEvent> List<SubscriptionInfo> getHandlersForEvent(Class<T> t);
 
+    <T extends IntegrationEvent> List<SubscriptionInfo> getHandlersForEvent(String eventName);
+
     <T extends IntegrationEvent> String getEventKey(Class<T> t);
 }
 
