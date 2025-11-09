@@ -7,9 +7,6 @@ public class OrderStatusChangedToAwaitingValidationIntegrationEventHandler
 
     @Override
     public Runnable handle(OrderStatusChangedToAwaitingValidationIntegrationEvent event) {
-        System.out.println("OrderStatusChangedToAwaitingValidationIntegrationEvent");
-        return () -> {
-
-        };
+        return null;
     }
 }
