@@ -24,6 +24,8 @@ public class EventBusSubscriptionManagerTests {
         EventBusSubscriptionManager manager = new EventBusSubscriptionManagerInMemory();
         manager.addSubscription(TestIntegrationEvent.class, TestIntegrationEventHandler.class);
         assertTrue(manager.hasSubscriptionsForEvent(TestIntegrationEvent.class));
+        Class<?> eventClass = manager.getEventTypeByName("TestIntegrationEvent");
+        assertEquals(TestIntegrationEvent.class, eventClass);
     }
 
     @Test

@@ -30,7 +30,7 @@ public class EventBusSubscriptionManagerInMemory implements EventBusSubscription
     @Override
     public <T extends IntegrationEvent, TH extends IntegrationEventHandler<T>> void addSubscription(Class<T> t, Class<TH> th) {
         doAddSubscription(t, th);
-        if (eventTypes.contains(t)) {
+        if (!eventTypes.contains(t)) {
             eventTypes.add(t);
         }
     }
@@ -44,8 +44,20 @@ public class EventBusSubscriptionManagerInMemory implements EventBusSubscription
 
     @Override
     public <T extends IntegrationEvent> boolean hasSubscriptionsForEvent(Class<T> t) {
-        String key = getEventKey(t);
-        return eventHandlers.containsKey(key);
+        return hasSubscriptionsForEvent(getEventKey(t));
+    }
+
+    @Override
+    public <T extends IntegrationEvent> boolean hasSubscriptionsForEvent(String eventName) {
+        return eventHandlers.containsKey(eventName);
+    }
+
+    @Override
+    public Class<?> getEventTypeByName(String eventName) {
+        Predicate<Class<?>> condition = (s) -> {
+            return s.getSimpleName().compareTo(eventName) == 0;
+        };
+        return eventTypes.stream().filter(condition).findFirst().get();
     }
 
     @Override

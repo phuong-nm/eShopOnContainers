@@ -12,7 +12,7 @@ public class SubscriptionInfo {
         return new SubscriptionInfo(handlerType);
     }
 
-    Class<?> getHandlerType() {
+    public Class<?> getHandlerType() {
         return handlerType;
     }
 }

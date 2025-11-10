@@ -15,6 +15,10 @@ public interface EventBusSubscriptionManager {
 
     <T extends IntegrationEvent> boolean hasSubscriptionsForEvent(Class<T> t);
 
+    <T extends IntegrationEvent> boolean hasSubscriptionsForEvent(String eventName);
+
+    Class<?> getEventTypeByName(String eventName);
+
     void clear();
 
     <T extends IntegrationEvent> List<SubscriptionInfo> getHandlersForEvent(Class<T> t);
