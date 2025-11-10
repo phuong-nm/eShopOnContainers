@@ -1,4 +1,4 @@
-package com.eshop.ordering_signalrhub;
+package com.eshop.ordering_signalrhub.events;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
