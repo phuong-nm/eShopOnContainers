@@ -12,6 +12,7 @@ import com.eshop.eventbus.EventBusSubscriptionManager;
 import com.eshop.eventbus.IntegrationEvent;
 import com.eshop.eventbus.IntegrationEventHandler;
 import com.eshop.eventbus.SubscriptionInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -42,6 +43,7 @@ public class EventBusRabbitMq implements EventBus {
         this.consumerChannel = createConsumerChannel();
         this.producerChannel = createProducerChannel();
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     @Override
@@ -108,7 +110,7 @@ public class EventBusRabbitMq implements EventBus {
                         consumerChannel.basicAck(envelope.getDeliveryTag(), false);
                     } catch (Exception e) {
                         // TODO: handle exception
-                        log.warn("Failed to process event {}: {}", eventName, e.getMessage());
+                        log.warn("Failed to process event {}: {} {}", eventName, e.getMessage(), new String(payload));
                     }
                 }
             };
