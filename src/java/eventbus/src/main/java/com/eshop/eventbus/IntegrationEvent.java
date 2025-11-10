@@ -3,15 +3,15 @@ package com.eshop.eventbus;
 import java.util.Date;
 import java.util.UUID;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class IntegrationEvent {
-    UUID id;
-    Date creationDate;
+    private UUID Id;
+    private Date CreationDate;
 
     public IntegrationEvent() {
-        id = UUID.randomUUID();
-        creationDate = new Date();
+        Id = UUID.randomUUID();
+        CreationDate = new Date();
     }
 }
