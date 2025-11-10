@@ -19,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.eshop</groupId>
-			<artifactId>eventbus</artifactId>
+			<artifactId>eventbus-rabbitmq</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
