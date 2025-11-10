@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.connection.Connection;
+import org.springframework.context.ApplicationContext;
 
 import com.eshop.eventbus.EventBus;
 import com.eshop.eventbus.EventBusSubscriptionManager;
@@ -27,6 +28,7 @@ public class EventBusRabbitMq implements EventBus {
 
     private final String BROKER_NAME = "eshop_event_bus";
 
+    private final ApplicationContext applicationContext;
     private Connection connection;
     private EventBusSubscriptionManager subscriptionManager;
     private String queueName;
@@ -36,7 +38,8 @@ public class EventBusRabbitMq implements EventBus {
     private final ObjectMapper objectMapper;
     private final boolean autoAck = false;
 
-    public EventBusRabbitMq(Connection connection, EventBusSubscriptionManager subscriptionManager, String queueName) {
+    public EventBusRabbitMq(ApplicationContext applicationContext, Connection connection, EventBusSubscriptionManager subscriptionManager, String queueName) {
+        this.applicationContext = applicationContext;
         this.connection = connection;
         this.subscriptionManager = subscriptionManager;
         this.queueName = queueName;
