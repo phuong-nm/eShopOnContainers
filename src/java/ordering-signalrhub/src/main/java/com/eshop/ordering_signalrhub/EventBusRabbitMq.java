@@ -33,7 +33,7 @@ public class EventBusRabbitMq implements EventBus {
     private Channel producerChannel;
     private Consumer consumer;
     private final ObjectMapper objectMapper;
-    private final boolean autoAck = true;
+    private final boolean autoAck = false;
 
     public EventBusRabbitMq(Connection connection, EventBusSubscriptionManager subscriptionManager, String queueName) {
         this.connection = connection;
@@ -102,26 +102,13 @@ public class EventBusRabbitMq implements EventBus {
             consumer = new DefaultConsumer(consumerChannel) {
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] payload) throws IOException {
-                    log.info("handleDelivery {} {}", envelope.getRoutingKey(), new String(payload));
                     String eventName = envelope.getRoutingKey();
-                    Class<?> eventClass = subscriptionManager.getEventTypeByName(eventName);
-                    Object eventInstance = objectMapper.readValue(payload, eventClass);
-                    List<SubscriptionInfo> subscriptionInfos = subscriptionManager.getHandlersForEvent(eventName);
-                    if (subscriptionInfos != null) {
-                        subscriptionInfos.forEach((s) -> {
-                            Class<?> eventHandlerClass = s.getHandlerType();
-                            try {
-                                Object eventHandlerInstance = eventHandlerClass.getDeclaredConstructor().newInstance();
-                                Method handleMethod = eventHandlerClass.getMethod("handle", eventClass);
-                                Runnable runnable = (Runnable)handleMethod.invoke(eventHandlerInstance, eventInstance);
-                                if (runnable != null) {
-                                    runnable.run();
-                                }
-                            } catch (Exception e) {
-                                // TODO: handle exception
-                                log.error("Failed to process event {}", e.toString());
-                            }
-                        });
+                    try {
+                        processConsumerMessage(envelope.getRoutingKey(), payload);
+                        consumerChannel.basicAck(envelope.getDeliveryTag(), false);
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                        log.warn("Failed to process event {}: {}", eventName, e.getMessage());
                     }
                 }
             };
@@ -132,6 +119,25 @@ public class EventBusRabbitMq implements EventBus {
                 // TODO: handle exception
                 log.error("basicConsume failed {}", e.toString());
             }
+        }
+    }
+
+    private void processConsumerMessage(String eventName, byte[] payload) throws Exception {
+        Class<?> eventClass = subscriptionManager.getEventTypeByName(eventName);
+        Object eventInstance = objectMapper.readValue(payload, eventClass);
+        List<SubscriptionInfo> subscriptionInfos = subscriptionManager.getHandlersForEvent(eventName);
+        try {
+            for (SubscriptionInfo subscriptionInfo : subscriptionInfos) {
+                Class<?> eventHandlerClass = subscriptionInfo.getHandlerType();
+                Object eventHandlerInstance = eventHandlerClass.getDeclaredConstructor().newInstance();
+                Method handleMethod = eventHandlerClass.getMethod("handle", eventClass);
+                Runnable runnable = (Runnable)handleMethod.invoke(eventHandlerInstance, eventInstance);
+                if (runnable != null) {
+                    runnable.run();
+                }
+            }
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 }
