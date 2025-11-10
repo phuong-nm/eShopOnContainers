@@ -15,15 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class EventBusFactory {
 
-    @Autowired
-    private EventBusSubscriptionManager subscriptionManager;
-
-    @Autowired
-    private Connection connection;
-
     @Bean
     @ConditionalOnMissingBean
-    EventBus getEventBus() {
+    EventBus getEventBus(Connection connection, EventBusSubscriptionManager subscriptionManager) {
         return new EventBusRabbitMq(connection, subscriptionManager, "Ordering.signalrhub.Test");
     }
 }

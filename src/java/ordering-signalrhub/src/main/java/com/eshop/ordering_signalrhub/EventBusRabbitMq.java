@@ -1,37 +1,47 @@
 package com.eshop.ordering_signalrhub;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.List;
 
+import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.connection.Connection;
 
 import com.eshop.eventbus.EventBus;
 import com.eshop.eventbus.EventBusSubscriptionManager;
 import com.eshop.eventbus.IntegrationEvent;
 import com.eshop.eventbus.IntegrationEventHandler;
+import com.eshop.eventbus.SubscriptionInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
+import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.ShutdownSignalException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class EventBusRabbitMq implements EventBus, Consumer {
+public class EventBusRabbitMq implements EventBus {
 
     private final String BROKER_NAME = "eshop_event_bus";
 
     private Connection connection;
-    private Channel channel;
     private EventBusSubscriptionManager subscriptionManager;
     private String queueName;
+    private Channel consumerChannel;
+    private Channel producerChannel;
+    private Consumer consumer;
+    private final ObjectMapper objectMapper;
+    private final boolean autoAck = true;
 
     public EventBusRabbitMq(Connection connection, EventBusSubscriptionManager subscriptionManager, String queueName) {
-        log.info("EventBusRabbitMQ constructor");
         this.connection = connection;
-        this.channel = connection.createChannel(false);
         this.subscriptionManager = subscriptionManager;
         this.queueName = queueName;
+        this.consumerChannel = createConsumerChannel();
+        this.producerChannel = createProducerChannel();
+        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -41,17 +51,24 @@ public class EventBusRabbitMq implements EventBus, Consumer {
 
     @Override
     public <T extends IntegrationEvent, TH extends IntegrationEventHandler<T>> void subscribe(Class<T> t, Class<TH> th) {
-        // create connection
-        try {
-            log.info("EventBusRabbitMQ declare queue");
-            channel.queueDeclare(queueName, true, false, false, null);
-            channel.queueBind(queueName, BROKER_NAME, t.getSimpleName());
-            boolean autoAck = false;
-            channel.basicConsume(queueName, autoAck, this);
-            //subscriptionManager.addSubscription(t, th);
+        // Handle subscription
+        String eventName = subscriptionManager.getEventKey(t);
+        if (!subscriptionManager.hasSubscriptionsForEvent(t)) {
+            if (consumerChannel != null) {
+                try {
+                    consumerChannel.queueBind(queueName, BROKER_NAME, eventName);
 
-        } catch (Exception e) {
-            log.error(e.toString());
+                    log.info("Subscribing to event {} with {}", eventName, th.getSimpleName());
+
+                    subscriptionManager.addSubscription(t, th);
+
+                    startBasicConsume();
+
+                } catch (Exception e) {
+                    // TODO: handle exception
+                    log.error("subscribe failed {}", e.toString());
+                }
+            }
         }
     }
 
@@ -60,35 +77,61 @@ public class EventBusRabbitMq implements EventBus, Consumer {
 
     }
 
-    @Override
-    public void handleConsumeOk(String consumerTag) {
-        log.info("EventBusRabbitMQ handleConsumeOk");
+    private Channel createConsumerChannel() {
+        Channel channel = connection.createChannel(false);
+
+        try {
+            channel.exchangeDeclare(BROKER_NAME, ExchangeTypes.DIRECT);
+            channel.queueDeclare(queueName, true, false, false, null);
+        } catch (Exception e) {
+            // TODO: handle exception
+            log.error("createConsumerChannel failed {}", e.toString());
+            channel = null;
+        }
+
+        return channel;
     }
 
-    @Override
-    public void handleCancelOk(String consumerTag) {
-        log.info("EventBusRabbitMQ handleCancelOk");
+    private Channel createProducerChannel() {
+        Channel channel = connection.createChannel(false);
+        return channel;
     }
 
-    @Override
-    public void handleCancel(String consumerTag) throws IOException {
-        log.info("EventBusRabbitMQ handleCancel");
-    }
+    private void startBasicConsume() {
+        if (consumerChannel != null) {
+            consumer = new DefaultConsumer(consumerChannel) {
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] payload) throws IOException {
+                    log.info("handleDelivery {} {}", envelope.getRoutingKey(), new String(payload));
+                    String eventName = envelope.getRoutingKey();
+                    Class<?> eventClass = subscriptionManager.getEventTypeByName(eventName);
+                    Object eventInstance = objectMapper.readValue(payload, eventClass);
+                    List<SubscriptionInfo> subscriptionInfos = subscriptionManager.getHandlersForEvent(eventName);
+                    if (subscriptionInfos != null) {
+                        subscriptionInfos.forEach((s) -> {
+                            Class<?> eventHandlerClass = s.getHandlerType();
+                            try {
+                                Object eventHandlerInstance = eventHandlerClass.getDeclaredConstructor().newInstance();
+                                Method handleMethod = eventHandlerClass.getMethod("handle", eventClass);
+                                Runnable runnable = (Runnable)handleMethod.invoke(eventHandlerInstance, eventInstance);
+                                if (runnable != null) {
+                                    runnable.run();
+                                }
+                            } catch (Exception e) {
+                                // TODO: handle exception
+                                log.error("Failed to process event {}", e.toString());
+                            }
+                        });
+                    }
+                }
+            };
 
-    @Override
-    public void handleShutdownSignal(String consumerTag, ShutdownSignalException var2) {
-        log.info("EventBusRabbitMQ handleShutdownSignal");
-    }
-
-    @Override
-    public void handleRecoverOk(String consumerTag) {
-        log.info("EventBusRabbitMQ handleRecoverOk");
-    }
-
-    @Override
-    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] payload) throws IOException {
-        log.info("EventBusRabbitMQ handleDelivery {} {} {}", consumerTag, envelope.getRoutingKey(), new String(payload));
-        channel.basicAck(envelope.getDeliveryTag(), false);
-        // TODO. get handler from routingKey and then dispatch the received message
+            try {
+                consumerChannel.basicConsume(queueName, autoAck, consumer);
+            } catch (Exception e) {
+                // TODO: handle exception
+                log.error("basicConsume failed {}", e.toString());
+            }
+        }
     }
 }
