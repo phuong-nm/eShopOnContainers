@@ -51,6 +51,7 @@ public class EventBusRabbitMq implements EventBus {
 
     @Override
     public void publish(IntegrationEvent event) {
+        log.info("publish {}", event);
         //channel.basicPublish();
     }
 
@@ -134,11 +135,21 @@ public class EventBusRabbitMq implements EventBus {
         try {
             for (SubscriptionInfo subscriptionInfo : subscriptionInfos) {
                 Class<?> eventHandlerClass = subscriptionInfo.getHandlerType();
-                Object eventHandlerInstance = eventHandlerClass.getDeclaredConstructor().newInstance();
-                Method handleMethod = eventHandlerClass.getMethod("handle", eventClass);
-                Runnable runnable = (Runnable)handleMethod.invoke(eventHandlerInstance, eventInstance);
-                if (runnable != null) {
-                    runnable.run();
+                if (eventHandlerClass != null) {
+                    Object eventHandlerInstance;
+                    try {
+                        // Try to find auto-generated bean for event handler
+                        eventHandlerInstance = applicationContext.getBean(eventHandlerClass);
+                    } catch (Exception e) {
+                        // When no such bean is found, try to create an instance of the event handler type.
+                        eventHandlerInstance = eventHandlerClass.getDeclaredConstructor().newInstance();
+                    }
+                    // Find and execute "handle" method of the event handler instance.
+                    Method handleMethod = eventHandlerClass.getMethod("handle", eventClass);
+                    Runnable runnable = (Runnable)handleMethod.invoke(eventHandlerInstance, eventInstance);
+                    if (runnable != null) {
+                        runnable.run();
+                    }
                 }
             }
         } catch (Exception e) {
