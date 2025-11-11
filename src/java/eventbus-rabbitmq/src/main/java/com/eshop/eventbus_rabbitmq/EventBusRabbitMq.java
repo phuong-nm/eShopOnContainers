@@ -20,6 +20,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.AMQP.BasicProperties;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,8 +52,31 @@ public class EventBusRabbitMq implements EventBus {
 
     @Override
     public void publish(IntegrationEvent event) {
-        log.info("publish {}", event);
-        //channel.basicPublish();
+        try {
+            // TODO handle persistent connection
+
+            // Get actual type name of base event
+            Class<?> clazz = event.getClass().asSubclass(IntegrationEvent.class);
+            String eventName = clazz.getSimpleName();
+
+            log.info("Creating RabbitMQ channel to publish event: {} ({})", event.getId(), eventName);
+
+            Channel channel = createProducerChannel();
+            log.info("Declaring RabbitMQ exchange to publish event: {}", event.getId());
+
+            channel.exchangeDeclare(BROKER_NAME, ExchangeTypes.DIRECT);
+
+            BasicProperties properties = new AMQP.BasicProperties.Builder()
+               .deliveryMode(2)
+               .build();
+            boolean mandatory = true;
+            channel.basicPublish(BROKER_NAME, eventName, mandatory, properties, objectMapper.writeValueAsBytes(event));
+
+            log.info("publish {}", event);
+            //channel.basicPublish();
+        } catch (Exception e) {
+            log.warn("Failed to publish event {}", e.getMessage());
+        }
     }
 
     @Override
