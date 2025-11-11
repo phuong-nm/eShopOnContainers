@@ -33,7 +33,7 @@ services:
       - identity-api
       - rabbitmq
 
-  catalog-api:
+  catalog-api-dotnet:
     image: ${REGISTRY:-eshop}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
@@ -41,6 +41,16 @@ services:
     depends_on:
       - sqldata
       - rabbitmq
+
+  catalog-api:
+    image: ${REGISTRY:-eshop-spring}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: ./java
+      dockerfile: catalog-api/Dockerfile
+    depends_on:
+      - sqldata
+      - rabbitmq
+      - catalog-api-dotnet # only for setup of catalogdb
 
   ordering-api:
     image: ${REGISTRY:-eshop}/ordering.api:${PLATFORM:-linux}-${TAG:-latest}
@@ -60,7 +70,7 @@ services:
       - sqldata
       - rabbitmq
 
-  payment-api:
+  payment-api-dotnet:
     image: ${REGISTRY:-eshop}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: .
@@ -68,7 +78,7 @@ services:
     depends_on:
       - rabbitmq
 
-  spring-payment-api:
+  payment-api:
     image: ${REGISTRY:-eshop-spring}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: ./java

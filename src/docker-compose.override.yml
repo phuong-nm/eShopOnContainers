@@ -78,7 +78,7 @@ services:
       - "5103:80"
       - "9103:81"
 
-  catalog-api:
+  catalog-api-dotnet:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionString=${ESHOP_AZURE_CATALOG_DB:-Server=sqldata;Database=Microsoft.eShopOnContainers.Services.CatalogDb;User Id=sa;Password=Pass@word;Encrypt=False;TrustServerCertificate=true}
@@ -96,9 +96,15 @@ services:
       - GRPC_PORT=81
       - PORT=80
       - PATH_BASE=/catalog-api
+
+  catalog-api:
+    restart: always
+    environment:
+      - SqlServerConnectionString=jdbc:sqlserver://sqldata;user=sa;password=Pass@word;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb;Encrypt=False;trustServerCertificate=true
+      - EventBusConnectionString=amqp://${ESHOP_SERVICE_BUS_USERNAME}:${ESHOP_SERVICE_BUS_PASSWORD}@rabbitmq:5672
     ports:
-      - "5101:80"
-      - "9101:81"
+      - "5101:8080"
+      - "9101:8081"
 
   ordering-api:
     environment:
@@ -144,7 +150,7 @@ services:
     ports:
       - "5111:80"
 
-  payment-api:
+  payment-api-dotnet:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:80
@@ -159,12 +165,12 @@ services:
     ports:
       - "5108:80"
 
-  spring-payment-api:
+  payment-api:
     restart: always
     environment:
       - EventBusConnectionString=amqp://${ESHOP_SERVICE_BUS_USERNAME}:${ESHOP_SERVICE_BUS_PASSWORD}@rabbitmq:5672
     ports:
-      - "5109:80"
+      - "5109:8080"
 
   webhooks-api:
     environment:
