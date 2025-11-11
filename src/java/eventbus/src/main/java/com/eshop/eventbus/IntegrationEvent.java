@@ -3,15 +3,24 @@ package com.eshop.eventbus;
 import java.util.Date;
 import java.util.UUID;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-@Data
+import lombok.Getter;
+
+@Getter
+@JsonFormat(with = { JsonFormat.Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES })
 public class IntegrationEvent {
-    private UUID Id;
-    private Date CreationDate;
+    private UUID id;
+
+    @JsonFormat(
+        shape = JsonFormat.Shape.STRING,
+        pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'",
+        timezone = "UTC"
+    )
+    private Date creationDate;
 
     public IntegrationEvent() {
-        Id = UUID.randomUUID();
-        CreationDate = new Date();
+        id = UUID.randomUUID();
+        creationDate = new Date();
     }
 }
