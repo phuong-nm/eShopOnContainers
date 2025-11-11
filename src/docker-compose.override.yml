@@ -103,8 +103,8 @@ services:
       - SqlServerConnectionString=jdbc:sqlserver://sqldata;user=sa;password=Pass@word;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb;Encrypt=False;trustServerCertificate=true
       - EventBusConnectionString=amqp://${ESHOP_SERVICE_BUS_USERNAME}:${ESHOP_SERVICE_BUS_PASSWORD}@rabbitmq:5672
     ports:
-      - "5101:8080"
-      - "9101:8081"
+      - "5101:80"
+      - "9101:81"
 
   ordering-api:
     environment:
@@ -170,7 +170,7 @@ services:
     environment:
       - EventBusConnectionString=amqp://${ESHOP_SERVICE_BUS_USERNAME}:${ESHOP_SERVICE_BUS_PASSWORD}@rabbitmq:5672
     ports:
-      - "5109:8080"
+      - "5109:80"
 
   webhooks-api:
     environment:
