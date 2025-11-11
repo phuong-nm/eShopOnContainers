@@ -18,21 +18,17 @@ import com.eshop.eventbus_rabbitmq.EventBusRabbitMq;
 @EnableConfigurationProperties
 public class EventBusRabbitMqAutoConfiguration {
 
+    @Value("${eshop.eventbus_rabbitmq.connection_string}")
+    private String connection_string;
+
     @Value("${eshop.eventbus_rabbitmq.queue_name}")
     private String queueName;
-
-    @Value("${eshop.eventbus_rabbitmq.host}")
-    private String host;
-
-    @Value("${eshop.eventbus_rabbitmq.port}")
-    private int port;
 
     @Bean
     @ConditionalOnMissingBean
     ConnectionFactory getConnectionFactory() {
         CachingConnectionFactory factory = new CachingConnectionFactory();
-        factory.setHost(host);
-        factory.setPort(port);
+        factory.setUri(connection_string);
         return factory;
     }
 
