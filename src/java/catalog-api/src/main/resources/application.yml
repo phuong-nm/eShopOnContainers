@@ -4,9 +4,7 @@ spring:
   application:
     name: catalog-api
   datasource:
-    url: jdbc:sqlserver://localhost:5433;trustServerCertificate=true;databaseName=Microsoft.eShopOnContainers.Services.CatalogDb
-    username: sa
-    password: Pass@word
+    url: ${SqlServerConnectionString}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
     show-sql: true
