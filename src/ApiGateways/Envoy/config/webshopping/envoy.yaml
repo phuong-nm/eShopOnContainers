@@ -28,13 +28,14 @@ static_resources:
                   prefix: "/c/"
                 route:
                   auto_host_rewrite: true
-                  prefix_rewrite: "/catalog-api/"
+                  prefix_rewrite: "/"
                   cluster: catalog
               - name: "c-long"
                 match:
                   prefix: "/catalog-api/"
                 route:
                   auto_host_rewrite: true
+                  prefix_rewrite: "/"
                   cluster: catalog
               - name: "o-short"
                 match:
