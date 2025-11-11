@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: payment-api
+eshop:
+  eventbus_rabbitmq:
+    connection_string: ${EventBusConnectionString}
+    queue_name: Payment.Test
