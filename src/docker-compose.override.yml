@@ -161,6 +161,13 @@ services:
     ports:
       - "5108:80"
 
+  payment-spring-api:
+    restart: always
+    environment:
+      - EventBusConnectionString=amqp://${ESHOP_SERVICE_BUS_USERNAME}:${ESHOP_SERVICE_BUS_PASSWORD}@rabbitmq:5672
+    ports:
+      - "5109:80"
+
   webhooks-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

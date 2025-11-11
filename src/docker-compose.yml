@@ -6,7 +6,7 @@ services:
     image: datalust/seq:latest
 
   sqldata:
-    image: mcr.microsoft.com/mssql/server:2019-latest 
+    image: mcr.microsoft.com/mssql/server:2019-latest
 
   nosqldata:
     image: mongo
@@ -67,6 +67,14 @@ services:
     build:
       context: .
       dockerfile: Services/Payment/Payment.API/Dockerfile
+    depends_on:
+      - rabbitmq
+
+  payment-spring-api:
+    image: ${REGISTRY:-eshop-spring}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
+    build:
+      context: ./java
+      dockerfile: payment-api/Dockerfile
     depends_on:
       - rabbitmq
 
