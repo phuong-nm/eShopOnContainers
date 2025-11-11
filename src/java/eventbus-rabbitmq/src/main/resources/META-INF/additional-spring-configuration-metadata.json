@@ -1,0 +1,14 @@
+{
+    "properties": [
+        {
+            "name": "eshop.eventbus_rabbitmq.connection_string",
+            "type": "java.lang.String",
+            "description": "AMQP connection string"
+        },
+        {
+            "name": "eshop.eventbus_rabbitmq.queue_name",
+            "type": "java.lang.String",
+            "description": "EventBus queue name"
+        }
+    ]
+}
