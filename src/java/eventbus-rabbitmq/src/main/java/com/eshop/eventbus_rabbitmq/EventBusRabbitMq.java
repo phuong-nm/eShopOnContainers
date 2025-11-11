@@ -34,7 +34,6 @@ public class EventBusRabbitMq implements EventBus {
     private EventBusSubscriptionManager subscriptionManager;
     private String queueName;
     private Channel consumerChannel;
-    private Channel producerChannel;
     private Consumer consumer;
     private final ObjectMapper objectMapper;
     private final boolean autoAck = false;
@@ -45,7 +44,6 @@ public class EventBusRabbitMq implements EventBus {
         this.subscriptionManager = subscriptionManager;
         this.queueName = queueName;
         this.consumerChannel = createConsumerChannel();
-        this.producerChannel = createProducerChannel();
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
@@ -59,21 +57,19 @@ public class EventBusRabbitMq implements EventBus {
             Class<?> clazz = event.getClass().asSubclass(IntegrationEvent.class);
             String eventName = clazz.getSimpleName();
 
-            log.info("Creating RabbitMQ channel to publish event: {} ({})", event.getId(), eventName);
+            log.trace("Creating RabbitMQ channel to publish event: {} ({})", event.getId(), eventName);
 
             Channel channel = createProducerChannel();
-            log.info("Declaring RabbitMQ exchange to publish event: {}", event.getId());
+            log.trace("Declaring RabbitMQ exchange to publish event: {}", event.getId());
 
             channel.exchangeDeclare(BROKER_NAME, ExchangeTypes.DIRECT);
 
+            log.trace("Publishing event to RabbitMQ: {}", event.getId());
             BasicProperties properties = new AMQP.BasicProperties.Builder()
                .deliveryMode(2)
                .build();
             boolean mandatory = true;
             channel.basicPublish(BROKER_NAME, eventName, mandatory, properties, objectMapper.writeValueAsBytes(event));
-
-            log.info("publish {}", event);
-            //channel.basicPublish();
         } catch (Exception e) {
             log.warn("Failed to publish event {}", e.getMessage());
         }
@@ -110,6 +106,8 @@ public class EventBusRabbitMq implements EventBus {
     private Channel createConsumerChannel() {
         Channel channel = connection.createChannel(false);
 
+        log.trace("Creating RabbitMQ consumer channel");
+
         try {
             channel.exchangeDeclare(BROKER_NAME, ExchangeTypes.DIRECT);
             channel.queueDeclare(queueName, true, false, false, null);
@@ -128,6 +126,7 @@ public class EventBusRabbitMq implements EventBus {
     }
 
     private void startBasicConsume() {
+        log.trace("Starting RabbitMQ basic consume");
         if (consumerChannel != null) {
             consumer = new DefaultConsumer(consumerChannel) {
                 @Override
@@ -153,6 +152,7 @@ public class EventBusRabbitMq implements EventBus {
     }
 
     private void processConsumerMessage(String eventName, byte[] payload) throws Exception {
+        log.trace("Processing RabbitMQ event: {}", eventName);
         Class<?> eventClass = subscriptionManager.getEventTypeByName(eventName);
         Object eventInstance = objectMapper.readValue(payload, eventClass);
         List<SubscriptionInfo> subscriptionInfos = subscriptionManager.getHandlersForEvent(eventName);
