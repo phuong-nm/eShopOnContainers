@@ -4,4 +4,4 @@ docker compose --project-name eshop -f docker-compose.yml -f docker-compose.over
     ordering-signalrhub `
     payment-api `
     seq
-docker compose --project-directory ..\deploy -f docker-compose.elk.yml up --build -d
+#docker compose --project-directory ..\deploy -f docker-compose.elk.yml up --build -d
