@@ -2,6 +2,6 @@ docker compose --project-name eshop -f docker-compose.yml -f docker-compose.over
     webspa webstatus `
     ordering-backgroundtasks `
     ordering-signalrhub `
-    payment-spring-api `
+    spring-payment-api `
     seq
 docker compose --project-directory ..\deploy -f docker-compose.elk.yml up --build -d

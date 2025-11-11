@@ -1,5 +1,3 @@
-version: '3.4'
-
 services:
 
   seq:
@@ -70,7 +68,7 @@ services:
     depends_on:
       - rabbitmq
 
-  payment-spring-api:
+  spring-payment-api:
     image: ${REGISTRY:-eshop-spring}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: ./java
