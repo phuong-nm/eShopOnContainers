@@ -11,6 +11,7 @@
     <modules>
         <module>eventbus</module>
         <module>eventbus-rabbitmq</module>
+        <module>catalog-api</module>
         <module>ordering-signalrhub</module>
         <module>payment-api</module>
     </modules>
