@@ -102,7 +102,7 @@ export class CatalogComponent implements OnInit {
                 };
                 // Build dynamic link to catalog item picture
                 this.catalog.data.forEach(item => {
-                    item.pictureUri = `${this.configurationService.serverSettings.purchaseUrl} + '/c/api/v1/catalog/items/${item.id}/pic'`
+                    item.pictureUri = `${this.configurationService.serverSettings.purchaseUrl}/c/api/v1/catalog/items/${item.id}/pic`
                 })
         });
     }
