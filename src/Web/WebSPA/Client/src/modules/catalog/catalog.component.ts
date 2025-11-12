@@ -35,7 +35,7 @@ export class CatalogComponent implements OnInit {
     ngOnInit() {
 
         // Configuration Settings:
-        if (this.configurationService.isReady) 
+        if (this.configurationService.isReady)
             this.loadData();
         else
             this.configurationService.settingsLoaded$.subscribe(x => {
@@ -56,7 +56,7 @@ export class CatalogComponent implements OnInit {
 
     onFilterApplied(event: any) {
         event.preventDefault();
-        
+
         this.brandSelected = this.brandSelected && this.brandSelected.toString() != "null" ? this.brandSelected : null;
         this.typeSelected = this.typeSelected && this.typeSelected.toString() != "null" ? this.typeSelected : null;
         this.paginationInfo.actualPage = 0;
@@ -100,6 +100,10 @@ export class CatalogComponent implements OnInit {
                     totalPages: Math.ceil(catalog.count / catalog.pageSize),
                     items: catalog.pageSize
                 };
+                // Build dynamic link to catalog item picture
+                this.catalog.data.forEach(item => {
+                    item.pictureUri = `${this.configurationService.serverSettings.purchaseUrl} + '/c/api/v1/catalog/items/${item.id}/pic'`
+                })
         });
     }
 
