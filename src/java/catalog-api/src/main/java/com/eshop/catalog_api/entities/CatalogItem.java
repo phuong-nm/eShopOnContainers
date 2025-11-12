@@ -82,11 +82,25 @@ public class CatalogItem {
     @Column(name = "\"OnReorder\"")
     private boolean onReorder;
 
-    public int removeStock(int quantityDesired) {
-        return 0;
+    public int removeStock(int quantityDesired) throws Exception {
+        if (availableStock <= 0) {
+            throw new Exception(String.format("Empty stock, product item {} is sold out", name));
+        } else if (quantityDesired <= 0) {
+            throw new Exception(String.format("Item units desired should be greater than zero"));
+        }
+        int removed = Math.min(quantityDesired, availableStock);
+        availableStock -= removed;
+        return removed;
     }
 
     public int addStock(int quantity) {
-        return 0;
+        int original = availableStock;
+        if ((availableStock + quantity) > maxStockThreshold) {
+            availableStock += (maxStockThreshold - availableStock);
+        } else {
+            availableStock += quantity;
+        }
+        onReorder = false;
+        return availableStock - original;
     }
 }

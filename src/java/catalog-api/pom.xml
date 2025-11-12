@@ -51,6 +51,11 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.20.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.eshop</groupId>
+			<artifactId>eventbus-rabbitmq</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
