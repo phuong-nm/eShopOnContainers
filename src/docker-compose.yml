@@ -43,7 +43,7 @@ services:
       - rabbitmq
 
   catalog-api:
-    image: ${REGISTRY:-eshop-spring}/catalog.api:${PLATFORM:-linux}-${TAG:-latest}
+    image: ${REGISTRY:-eshop}/spring-catalog.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: ./java
       dockerfile: catalog-api/Dockerfile
@@ -79,7 +79,7 @@ services:
       - rabbitmq
 
   payment-api:
-    image: ${REGISTRY:-eshop-spring}/payment.api:${PLATFORM:-linux}-${TAG:-latest}
+    image: ${REGISTRY:-eshop}/spring-payment.api:${PLATFORM:-linux}-${TAG:-latest}
     build:
       context: ./java
       dockerfile: payment-api/Dockerfile
